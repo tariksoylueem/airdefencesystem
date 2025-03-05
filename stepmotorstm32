@@ -1,1 +1,22 @@
+# STM32F407 Stepper Motor Control using PWM (PB5)
+
+This project demonstrates stepper motor control using the STM32F407 microcontroller. 
+A precise PWM signal is generated on **PB5** to drive the stepper motor driver.
+
+## 🛠️ **Project Features**
+✅ **PWM Generation on PB5** using TIMx  
+✅ **Controlling Stepper Motor** via Step and Direction (DIR) pins  
+✅ **Adjustable Step Speed** by modifying timer settings  
+✅ **Compatible with various stepper motor drivers**  
+
+## 📌 **Hardware Configuration**
+- **Microcontroller:** STM32F407VGT6  
+- **Step Pin (PWM Output):** PB5  
+- **Direction Pin (DIR Control):** Any GPIO (e.g., PA9)  
+- **Power Supply:** 12V/24V (for stepper motor driver)  
+
+## ⚡ **Code Highlights**
+```c
+HAL_TIM_PWM_Start(&htimx, TIM_CHANNEL_X); // Start PWM signal on PB5
+HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_SET); // Set direction HIGH
 
