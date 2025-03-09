@@ -1,0 +1,72 @@
+# SPI Communication Between Jetson Orin NX and STM32F407  
+
+![Jetson Orin NX & STM32F407 SPI](https://user-images.githubusercontent.com/example/image.jpg)  
+
+## 🚀 Project Overview  
+This project establishes **SPI communication between an NVIDIA Jetson Orin NX and an STM32F407 microcontroller**. The goal is to enable a **fast and reliable data exchange** between these two embedded systems for real-time control applications.  
+
+The **Jetson Orin NX acts as the SPI Master**, while the **STM32F407 operates as the SPI Slave**. The STM32 receives commands from the Jetson, executes the required actions, and sends feedback as necessary.  
+
+---
+
+## 📌 System Architecture  
+### ✅ **Jetson Orin NX (SPI Master)**
+- Processes data and generates control commands.  
+- Sends commands via SPI to STM32.  
+- Uses GPIO-controlled Chip Select (CS) for data management.  
+
+### ✅ **STM32F407 (SPI Slave)**
+- Receives SPI commands and executes actions.  
+- Controls **stepper motors and actuators** based on the received data.  
+- Provides feedback to Jetson for system updates.  
+
+---
+
+## 🔧 **Hardware Setup**  
+### ✅ **Connections**
+| Jetson Orin NX (Master) | STM32F407 (Slave) |
+|-----------------|-----------------|
+| MOSI (SPI TX) | SPI1_MOSI (PA7) |
+| MISO (SPI RX) | SPI1_MISO (PA6) |
+| SCK (SPI CLK) | SPI1_SCK (PA5) |
+| SS (GPIO) | SPI1_NSS (PA4 - GPIO Controlled) |
+| GND | GND |
+
+---
+
+## ⚙ **SPI Configuration**
+### **Jetson Orin NX (SPI Master)**
+```python
+import spidev  
+import RPi.GPIO as GPIO  
+
+SPI_BUS = 0  
+SPI_DEVICE = 0  
+CS_PIN = 10  
+
+GPIO.setmode(GPIO.BCM)  
+GPIO.setup(CS_PIN, GPIO.OUT)  
+spi = spidev.SpiDev()  
+spi.open(SPI_BUS, SPI_DEVICE)  
+spi.max_speed_hz = 1000000  
+
+def send_spi_data(data):  
+    GPIO.output(CS_PIN, GPIO.LOW)  
+    spi.xfer2([data])  
+    GPIO.output(CS_PIN, GPIO.HIGH)  
+
+
+/* STM32F407 CODE */
+/* SPI Receive Buffer */
+uint8_t spi_rx_buffer = 0;
+
+/* Initialize SPI Reception */
+HAL_SPI_Receive_IT(&hspi1, &spi_rx_buffer, 1);
+
+/* SPI Interrupt Callback */
+void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi) {
+    if (hspi->Instance == SPI1) {
+        printf("SPI Data Received: %d\n", spi_rx_buffer);
+        HAL_SPI_Receive_IT(&hspi1, &spi_rx_buffer, 1);
+    }
+}
